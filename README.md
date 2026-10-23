@@ -31,6 +31,10 @@ npm ci
 npx playwright install chromium   # potrzebne tylko do testów E2E
 ```
 
+## Filtrowanie gier
+
+Lista gier na stronie głównej ma filtry: kategorie (wiele, łączone przez OR) i wydawca (jeden), łączone ze sobą przez AND. Strona jest statyczna, więc filtrowanie odbywa się w przeglądarce (ukrywanie kart wg atrybutów `data-*`). Helpery filtrowania: `getGamesFiltered`, `getAllCategories`, `getAllPublishers` w `src/lib/games.ts`.
+
 ## Uruchomienie strony
 
 ```bash
