@@ -1,6 +1,21 @@
 import { test, expect, type Response } from '@playwright/test';
 
 test.describe('Lista gier i nawigacja', () => {
+  test('każda karta gry pokazuje ocenę lub „Brak oceny"', async ({ page }) => {
+    await test.step('Przejdź na stronę główną', async () => {
+      await page.goto('/');
+    });
+
+    await test.step('Sprawdź treść oceny na każdej karcie', async () => {
+      const ratings = page.getByTestId('game-card').getByTestId('game-card-rating');
+      const count = await ratings.count();
+      expect(count).toBeGreaterThan(0);
+      for (let i = 0; i < count; i++) {
+        await expect(ratings.nth(i)).toHaveText(/Brak oceny|\d\.\d \/ 5/);
+      }
+    });
+  });
+
   test('wyświetla gry z tytułami na stronie głównej', async ({ page }) => {
     await test.step('Przejdź na stronę główną', async () => {
       await page.goto('/');
