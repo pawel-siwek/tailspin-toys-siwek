@@ -25,9 +25,3 @@ export interface Game {
     category: Category | null;
     starRating: number | null;
 }
-
-/** Filtry listy gier; puste/nieustawione pola oznaczają brak filtrowania. */
-export interface GameFilters {
-    categoryIds?: number[];
-    publisherId?: number;
-}
