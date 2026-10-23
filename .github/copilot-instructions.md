@@ -36,7 +36,6 @@ To platforma crowdfundingowa dla gier o tematyce programistycznej. Aplikacja to 
 
 - Używaj TypeScriptu z jawnymi typami parametrów funkcji i wartości zwracanych, zwłaszcza w warstwie danych (`db/`, `src/lib/`)
 - Kod frontendu (TypeScript, Astro) musi przechodzić kontrolę ESLint (`npm run lint`)
-- Każdy nowy kod TypeScript ma zawierać komentarze TSDoc dokumentujące funkcje i typy.c
 
 ### Wzorce warstwy danych (Drizzle + Node SQLite)
 
@@ -91,8 +90,8 @@ To platforma crowdfundingowa dla gier o tematyce programistycznej. Aplikacja to 
 Aplikacja znajduje się w katalogu głównym repozytorium:
 
 - `db/`: schemat Drizzle, migracje, transformacje, seed i `games.csv`
-- `src/lib/`: klient Node SQLite (`db.ts`) i helpery dostępu do danych (`games.ts`, w tym `getGamesFiltered`, `getAllCategories`, `getAllPublishers`)
-- `src/components/`: komponenty `.astro` wielokrotnego użytku (m.in. `GameFilters.astro` – filtry kategorii i wydawcy działające w przeglądarce przez scoped `<script>`)
+- `src/lib/`: klient Node SQLite (`db.ts`) i helpery dostępu do danych (`games.ts`)
+- `src/components/`: komponenty `.astro` wielokrotnego użytku
 - `src/layouts/`: szablony layoutów Astro
 - `src/pages/`: trasy stron Astro (lista `index.astro`, `game/[id].astro`, `404.astro`, `about.astro`)
 - `src/styles/`: CSS i konfiguracja Tailwind
