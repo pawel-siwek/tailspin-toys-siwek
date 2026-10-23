@@ -6,6 +6,9 @@ import {
     getAllGames,
     getAllGameIds,
     getGameById,
+    getGamesFiltered,
+    getAllCategories,
+    getAllPublishers,
 } from './games';
 
 async function seedGames(db: Database, count: number): Promise<void> {
@@ -62,5 +65,81 @@ describe('helpery dostępu do danych o grach', () => {
     it('zwraca null dla nieistniejącej gry', async () => {
         await seedGames(db, 2);
         expect(await getGameById(db, 99999)).toBeNull();
+    });
+});
+
+describe('filtrowanie gier', () => {
+    let db: Database;
+    let ids: { kat: Record<string, number>; wyd: Record<string, number> };
+
+    beforeEach(async () => {
+        db = await createTestDatabase();
+        const kat: Record<string, number> = {};
+        const wyd: Record<string, number> = {};
+        for (const name of ['Strategia', 'Platformówka', 'Zagadki']) {
+            const [row] = await db.insert(categories).values({ name }).returning({ id: categories.id });
+            kat[name] = row.id;
+        }
+        for (const name of ['Wydawca B', 'Wydawca A']) {
+            const [row] = await db.insert(publishers).values({ name }).returning({ id: publishers.id });
+            wyd[name] = row.id;
+        }
+        const rows: [string, string, string][] = [
+            ['Gra 1', 'Strategia', 'Wydawca A'],
+            ['Gra 2', 'Strategia', 'Wydawca B'],
+            ['Gra 3', 'Platformówka', 'Wydawca A'],
+            ['Gra 4', 'Zagadki', 'Wydawca B'],
+        ];
+        for (const [title, k, w] of rows) {
+            await db.insert(games).values({
+                title,
+                description: 'Opis',
+                categoryId: kat[k],
+                publisherId: wyd[w],
+            });
+        }
+        ids = { kat, wyd };
+    });
+
+    const titles = async (filters?: Parameters<typeof getGamesFiltered>[1]): Promise<string[]> =>
+        (await getGamesFiltered(db, filters)).map((g) => g.title);
+
+    it('zwraca wszystkie gry bez filtrów', async () => {
+        expect(await titles()).toEqual(['Gra 1', 'Gra 2', 'Gra 3', 'Gra 4']);
+        expect(await titles({ categoryIds: [] })).toHaveLength(4);
+    });
+
+    it('filtruje po jednej kategorii', async () => {
+        expect(await titles({ categoryIds: [ids.kat['Strategia']] })).toEqual(['Gra 1', 'Gra 2']);
+    });
+
+    it('filtruje po wielu kategoriach (OR)', async () => {
+        const result = await titles({ categoryIds: [ids.kat['Strategia'], ids.kat['Zagadki']] });
+        expect(result).toEqual(['Gra 1', 'Gra 2', 'Gra 4']);
+    });
+
+    it('filtruje po wydawcy', async () => {
+        expect(await titles({ publisherId: ids.wyd['Wydawca A'] })).toEqual(['Gra 1', 'Gra 3']);
+    });
+
+    it('łączy filtry kategorii i wydawcy (AND)', async () => {
+        const result = await titles({
+            categoryIds: [ids.kat['Strategia']],
+            publisherId: ids.wyd['Wydawca B'],
+        });
+        expect(result).toEqual(['Gra 2']);
+    });
+
+    it('zwraca pustą listę, gdy nic nie pasuje', async () => {
+        const result = await titles({
+            categoryIds: [ids.kat['Zagadki']],
+            publisherId: ids.wyd['Wydawca A'],
+        });
+        expect(result).toEqual([]);
+    });
+
+    it('zwraca kategorie i wydawców posortowanych po nazwie', async () => {
+        expect((await getAllCategories(db)).map((c) => c.name)).toEqual(['Platformówka', 'Strategia', 'Zagadki']);
+        expect((await getAllPublishers(db)).map((p) => p.name)).toEqual(['Wydawca A', 'Wydawca B']);
     });
 });
